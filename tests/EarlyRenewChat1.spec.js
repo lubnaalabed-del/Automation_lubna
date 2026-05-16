@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('test', async ({ page }) => {
-  await page.goto('https://stg.arabtherapy.com/ar');
+  await page.goto('https://uat.arabtherapy.com/ar');
   //Teens&Children therapy
   await page.getByRole('button', { name: 'ابدأ الآن' }).nth(3).first().click();
   await page.getByTestId('child-gender-1').first().click();
@@ -34,15 +34,39 @@ test('test', async ({ page }) => {
   await page.locator('.v-input--selection-controls__ripple').click();
   await page.waitForTimeout(1000);
   await page.getByTestId('register-submit').click();
-  //Subscription
-  await page.waitForSelector('text=ابدأ الآن');
+    //Subscription
+  
+  await page.getByText('ادفع بأمان واحجز اول موعد', { exact: true }).click();
   await page.getByTestId('subscription-plan-start-btn-1').first().click();
-  await page.locator('#payment-option-paymob-wallets > .payment-label > .radio-btn').click();
-  await page.getByRole('textbox', { name: 'رقم الهاتف' }).fill('01010101010');
-  await page.getByRole('button', { name: 'اشترك الآن' }).click();
-  await page.locator('#userPin').fill('123456');
-  await page.locator('#userOTP').fill('123456');
-  await page.getByRole('button', { name: 'Pay with Wallet' }).click();
+  await page.locator('#payment-option-stripe > .payment-label > .radio-btn').click();
+ // Card Number 
+  const cardNumberFrame = page.frameLocator(
+  'iframe[title="Secure card number input frame"]:visible'
+  );
+
+  await cardNumberFrame
+  .getByRole('textbox')
+  .fill('5555 5555 5555 4444');
+
+  // Expiry Date
+  const expiryFrame = page.frameLocator(
+  'iframe[title="Secure expiration date input frame"]:visible'
+  );
+
+  await expiryFrame
+  .getByRole('textbox')
+  .fill('12 / 30');
+
+  // CVC
+  const cvcFrame = page.frameLocator(
+  'iframe[title="Secure CVC input frame"]:visible'
+  );
+
+  await cvcFrame
+  .getByRole('textbox')
+  .fill('333');
+
+  await page.getByRole('button', { name: 'اشترك الآن' }).first().click();
    
   
   await page.waitForTimeout(6000);
@@ -82,7 +106,6 @@ test('test', async ({ page }) => {
   await page.getByText('Super Admin').first().click();
   await page.getByRole('button', { name: 'تسجيل الخروج' }).click();
   await page.getByRole('link', { name: 'تسجيل الدخول' }).first().click();
-   await page.getByRole('link', { name: 'تسجيل الدخول' }).first().click();
   await page.getByTestId('login-email').click();
   await page.getByTestId('login-email').fill(randomEmail);
   await page.getByTestId('login-email').press('Tab');
@@ -101,7 +124,7 @@ test('test', async ({ page }) => {
       await firstActiveDay.click();
       const firstAppointment = page.locator('.times .time').first();
       await firstAppointment.click();
-      await page.getByTestId('meeting-type-video').click();
+      await page.getByTestId('meeting-type-messages').click();
       await page.waitForTimeout(1000);
       await button.click();
 
@@ -129,19 +152,7 @@ test('test', async ({ page }) => {
 
 
   await page.getByTestId('book-appointment-btn').first().click();
-  //Early Renew
-  await page.getByTestId('book-appointment-dialog').getByRole('alert').first().click();
-  await page.waitForTimeout(1000);
-  await page.locator('#payment-option-paymob-wallets > .payment-label > .radio-btn').click();
-  await page.getByRole('textbox', { name: 'رقم الهاتف' }).fill('01010101010');
-  await page.getByRole('button', { name: 'اشترك الآن' }).click();
-  await page.locator('#userPin').fill('123456');
-  await page.locator('#userOTP').fill('123456');
-  await page.getByRole('button', { name: 'Pay with Wallet' }).click();
-   
-  await page.waitForTimeout(6000);
- 
-  await page.getByTestId('book-appointment-btn').first().click();
+  
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const dayPicker = page.locator('.v-date-picker-table');
@@ -149,7 +160,7 @@ test('test', async ({ page }) => {
       await firstActiveDay.click();
       const firstAppointment = page.locator('.times .time').first();
       await firstAppointment.click();
-      await page.getByTestId('meeting-type-video').click();
+      await page.getByTestId('meeting-type-messages').click();
       await page.waitForTimeout(1000);
       await button.click();
 
@@ -175,128 +186,9 @@ test('test', async ({ page }) => {
     throw new Error('Failed to book an appointment after multiple attempts');
   }
 
-  //Change session date 1
-  await page.getByTestId('change-session-time-1').click();
-for (let attempt = 0; attempt < 3; attempt++) {
-  try {
-    const dayPicker = page.locator('.v-date-picker-table');
-    const firstActiveDay = dayPicker.locator('button:not([disabled])').first();
-    await firstActiveDay.click();
+  await page.getByTestId('change-session-type-1').click();
+  await page.getByTestId('cancel-change-session-type-modal').click();
+  await page.getByTestId('change-session-type-1').click();
+  await page.getByTestId('confirm-change-session-type-modal').click();
 
-    // Select different appointment each retry
-    const appointment = page.locator('.times .time').nth(attempt);
-    await appointment.click();
-
-    await page.getByTestId('meeting-type-video').click();
-    await page.waitForTimeout(1000);
-
-    await button.click();
-
-    await page.waitForSelector('text=تم حجز الموعد بنجاح', { timeout: 7000 });
-
-    bookingSuccess = true;
-    break;
-
-  } catch (e) {
-
-    const unavailable = await page
-      .locator('text=لم يعد الموعد متوفرًا، يرجى اختيار موعد آخر')
-      .isVisible();
-
-    if (unavailable) {
-      await page.getByRole('button', { name: 'Ok' }).click();
-      // loop will retry with next appointment automatically
-    } else {
-      throw e;
-    }
-  }
-}
-
-if (!bookingSuccess) {
-  throw new Error('Failed to book an appointment after multiple attempts');
-}
-  //2
-    await page.getByTestId('change-session-time-1').click();
-  for (let attempt = 0; attempt < 3; attempt++) {
-  try {
-    const dayPicker = page.locator('.v-date-picker-table');
-    const firstActiveDay = dayPicker.locator('button:not([disabled])').first();
-    await firstActiveDay.click();
-
-    // Select different appointment each retry
-    const appointment = page.locator('.times .time').nth(attempt);
-    await appointment.click();
-
-    await page.getByTestId('meeting-type-video').click();
-    await page.waitForTimeout(1000);
-
-    await button.click();
-
-    await page.waitForSelector('text=تم حجز الموعد بنجاح', { timeout: 7000 });
-
-    bookingSuccess = true;
-    break;
-
-  } catch (e) {
-
-    const unavailable = await page
-      .locator('text=لم يعد الموعد متوفرًا، يرجى اختيار موعد آخر')
-      .isVisible();
-
-    if (unavailable) {
-      await page.getByRole('button', { name: 'Ok' }).click();
-      // loop will retry with next appointment automatically
-    } else {
-      throw e;
-    }
-  }
-}
-
-if (!bookingSuccess) {
-  throw new Error('Failed to book an appointment after multiple attempts');
-}
-
-  //3
-    await page.getByTestId('change-session-time-1').click();
- for (let attempt = 0; attempt < 3; attempt++) {
-  try {
-    const dayPicker = page.locator('.v-date-picker-table');
-    const firstActiveDay = dayPicker.locator('button:not([disabled])').first();
-    await firstActiveDay.click();
-
-    // Select different appointment each retry
-    const appointment = page.locator('.times .time').nth(attempt);
-    await appointment.click();
-
-    await page.getByTestId('meeting-type-video').click();
-    await page.waitForTimeout(1000);
-
-    await button.click();
-
-    await page.waitForSelector('text=تم حجز الموعد بنجاح', { timeout: 7000 });
-
-    bookingSuccess = true;
-    break;
-
-  } catch (e) {
-
-    const unavailable = await page
-      .locator('text=لم يعد الموعد متوفرًا، يرجى اختيار موعد آخر')
-      .isVisible();
-
-    if (unavailable) {
-      await page.getByRole('button', { name: 'Ok' }).click();
-      // loop will retry with next appointment automatically
-    } else {
-      throw e;
-    }
-  }
-}
-
-if (!bookingSuccess) {
-  throw new Error('Failed to book an appointment after multiple attempts');
-}
-
-  await page.getByTestId('cancel-session-2').click();
-  await page.getByTestId('confirm-cancel-appointment-modal').click();
 });

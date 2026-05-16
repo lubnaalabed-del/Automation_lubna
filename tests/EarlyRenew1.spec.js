@@ -124,7 +124,7 @@ test('test', async ({ page }) => {
       await firstActiveDay.click();
       const firstAppointment = page.locator('.times .time').first();
       await firstAppointment.click();
-      await page.getByRole('button', { name: 'فيديو' }).click();
+      await page.getByTestId('meeting-type-video').click();
       await page.waitForTimeout(1000);
       await button.click();
 
@@ -160,7 +160,7 @@ test('test', async ({ page }) => {
       await firstActiveDay.click();
       const firstAppointment = page.locator('.times .time').first();
       await firstAppointment.click();
-      await page.getByRole('button', { name: 'فيديو' }).click();
+      await page.getByTestId('meeting-type-video').click();
       await page.waitForTimeout(1000);
       await button.click();
 

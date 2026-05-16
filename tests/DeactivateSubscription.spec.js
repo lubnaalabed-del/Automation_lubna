@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('test', async ({ page }) => {
-  await page.goto('https://uat.arabtherapy.com/ar');
+  await page.goto('https://stg.arabtherapy.com/ar');
   //Individual therapy / copoun & at+ 
   await page.getByTestId('individual-therapy-card').getByRole('button', { name: 'ابدأ الآن' }).click();
   await page.locator('.v-input--selection-controls__ripple').first().click();

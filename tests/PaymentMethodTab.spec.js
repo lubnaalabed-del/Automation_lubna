@@ -124,10 +124,13 @@ await page.getByRole('button', { name: 'نعم' }).click();
 //Settings
 await page.getByTestId('settings').click();
 await page.waitForTimeout(1000);
-await page.getByTestId('email-session-reminders-toggle').click();
-await page.getByTestId('email-session-subscription-toggle').click();
-await page.getByTestId('whatsapp-session-reminders-toggle').click();
-await page.getByTestId('whatsapp-session-subscription-toggle').click();
+await page.getByTestId('email-session-reminders-toggle').click({force:true});
+await page.waitForTimeout(1000);
+await page.getByTestId('email-session-subscription-toggle').click({force:true});
+await page.waitForTimeout(1000);
+await page.getByTestId('whatsapp-session-reminders-toggle').click({force:true});
+await page.waitForTimeout(1000);
+await page.getByTestId('whatsapp-session-subscription-toggle').click({force:true});
   
 });
 
